@@ -26,7 +26,7 @@ public class CertifierManager implements AbstractManager<String, Certifier> {
 	@Override
 	public void add(Certifier value) {
 		this.certifiers.put(value.getId(), value);
-		CertifierApp.getInstance().getConsole().fine("	+ " + value.getId() + " " + value.getPending().size() + " pending verifications.");
+		CertifierApp.getInstance().getConsole().fine("	+ " + value.getId());
 	}
 
 	@Override

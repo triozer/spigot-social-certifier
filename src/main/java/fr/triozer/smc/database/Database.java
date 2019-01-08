@@ -20,24 +20,26 @@ public class Database {
 
 	private Connection connection;
 
-	public Database(String host, int port, String database) {
-		this.host = host;
-		this.port = port;
-		this.database = database;
+	public Database() {
+		this.host = CertifierApp.getInstance().getSettings().getString("database.host");
+		this.port = CertifierApp.getInstance().getSettings().getInt("database.port");
+		this.database = CertifierApp.getInstance().getSettings().getString("database.name");
 	}
 
-	public Database auth(String username, String password) {
+	public Database auth() {
 		CertifierApp.getInstance().getConsole().fine("Database: Trying to connect to '" + this.database + "' database at '" + this.host + ":" + this.port + "'.");
 
 		try {
 			Class.forName("com.mysql.jdbc.Driver");
 
 			this.connection = DriverManager.getConnection("jdbc:mysql://" + this.host + ":" + this.port + "/" + this.database + "?autoReconnect=true&useSSL=true",
-					username, password);
+					CertifierApp.getInstance().getSettings().getString("database.user"),
+					CertifierApp.getInstance().getSettings().getString("database.pass"));
 			CertifierApp.getInstance().getConsole().fine("Database: Connected.");
 
 		} catch (ClassNotFoundException | SQLException e) {
 			CertifierApp.getInstance().getConsole().stacktrace("Database: Connection failed.", e);
+			CertifierApp.getInstance().stop(0);
 		}
 
 		return this;

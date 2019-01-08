@@ -9,7 +9,7 @@ import java.util.function.Predicate;
 /**
  * @author Cédric / Triozer
  */
-public interface Certifier {
+public interface Certifier<T> {
 
 	void run();
 
@@ -25,6 +25,8 @@ public interface Certifier {
 
 	boolean isValid(String token, Predicate<String> format);
 
+	boolean isRunning();
+
 	Settings getSettings();
 
 	String getId();
@@ -34,5 +36,7 @@ public interface Certifier {
 	Thread getThread();
 
 	Set<String> getPending();
+
+	T getClient();
 
 }

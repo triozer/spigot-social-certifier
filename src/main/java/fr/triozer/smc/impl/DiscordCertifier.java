@@ -12,12 +12,12 @@ import javax.security.auth.login.LoginException;
 /**
  * @author Cédric / Triozer
  */
-public class DiscordCertifier extends BaseCertifier {
+public class DiscordCertifier extends BaseCertifier<JDA> {
 
 	private JDA client;
 
 	public DiscordCertifier() {
-		super(new Settings(), "discord", "SMC-DISCORD");
+		super("discord", "SMC-DISCORD");
 	}
 
 	@Override
@@ -37,11 +37,11 @@ public class DiscordCertifier extends BaseCertifier {
 									event.getMessage().addReaction("✔").complete();
 								}
 							} else
-
 								event.getMessage().addReaction("❌").complete();
 						}
 					})
 					.build();
+			this.running = true;
 		} catch (LoginException e) {
 			CertifierApp.getInstance().getConsole()
 					.stacktrace("	" + this.getId() + " error on starting the discord bot.", e);
@@ -51,20 +51,12 @@ public class DiscordCertifier extends BaseCertifier {
 
 	@Override
 	public void stop() {
-		this.client.shutdown();
-		CertifierApp.getInstance().getConsole().fine("	" + this.getId() + ": stopped.");
+		this._stop((jda) -> this.client.shutdown());
 	}
 
+	@Override
 	public final JDA getClient() {
 		return this.client;
-	}
-
-	private static class Settings extends CertifierSettings {
-		@Override
-		protected void init() {
-			this.settings.set("token", "<YOUR_TOKEN>");
-			this.settings.set("default_channel", "528224189157736458");
-		}
 	}
 
 }

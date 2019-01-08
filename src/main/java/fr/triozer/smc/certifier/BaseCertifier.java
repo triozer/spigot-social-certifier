@@ -3,32 +3,43 @@ package fr.triozer.smc.certifier;
 import fr.triozer.smc.CertifierApp;
 import fr.triozer.smc.setting.Settings;
 
+import java.io.File;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.function.Consumer;
 import java.util.function.Predicate;
 
 /**
  * @author Cédric / Triozer
  */
-public abstract class BaseCertifier implements Certifier {
+public abstract class BaseCertifier<T> implements Certifier<T> {
 
 	protected final CertifierSettings   settings;
-	protected final String              id;
-	protected final String              name;
 	protected final Thread              thread;
 	protected       Map<String, String> pending;
+	protected       boolean             running;
 
-	public BaseCertifier(CertifierSettings settings, String id, String name) {
-		this.pending = CertifierApp.getInstance().getDatabase().getPendingOf(this);
-		this.settings = settings;
-		this.id = id;
-		this.name = name;
+	public BaseCertifier(String id, String name) {
+		this.settings = new CertifierSettings(id, name) {
+			@Override
+			public void init() {
+
+			}
+		};
+		this.running = false;
 		this.thread = new Thread(null, this::run, id);
+	}
+
+	protected void _stop(Consumer<T> action) {
+		this.running = false;
+		action.accept(this.getClient());
+		CertifierApp.getInstance().getConsole().fine("	" + this.getId() + ": stopped.");
 	}
 
 	@Override
 	public void start() {
+		CertifierApp.getInstance().getConsole().fine("	" + this.getId() + ": starting.");
 		this.thread.run();
 	}
 
@@ -55,18 +66,23 @@ public abstract class BaseCertifier implements Certifier {
 	}
 
 	@Override
+	public final boolean isRunning() {
+		return this.running;
+	}
+
+	@Override
 	public Settings getSettings() {
 		return this.settings.get();
 	}
 
 	@Override
 	public String getId() {
-		return this.id;
+		return this.settings.get().getString("id");
 	}
 
 	@Override
 	public String getName() {
-		return this.name;
+		return this.settings.get().getString("name");
 	}
 
 	@Override
@@ -83,12 +99,14 @@ public abstract class BaseCertifier implements Certifier {
 	public static abstract class CertifierSettings {
 		protected final Settings settings;
 
-		public CertifierSettings() {
-			this.settings = new Settings();
-			init();
+		public CertifierSettings(String id, String name) {
+			this.settings = new Settings(new File(CertifierApp.getInstance().getDataFolder(), id + ".certifier"));
+			this.settings.set("id", id);
+			this.settings.set("name", name);
+			this.init();
 		}
 
-		protected abstract void init();
+		public abstract void init();
 
 		public final Settings get() {
 			return this.settings;

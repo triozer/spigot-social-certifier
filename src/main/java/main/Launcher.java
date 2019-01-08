@@ -1,6 +1,7 @@
 package main;
 
 import fr.triozer.smc.CertifierApp;
+import fr.triozer.smc.impl.DiscordCertifier;
 
 /**
  * @author Cédric / Triozer
@@ -8,7 +9,9 @@ import fr.triozer.smc.CertifierApp;
 public class Launcher {
 
 	public static void main(String[] args) {
-		new CertifierApp().startAll();
+		CertifierApp app = new CertifierApp();
+		app.getManager().add(new DiscordCertifier());
+		app.startAll();
 	}
 
 }
